@@ -32,7 +32,7 @@ All no frameworks, no build step, one file 📁
 ## 🔢 Algorithms
 
 <p align="center">
-  <img src="screenshots/sorting.png" width="60%" alt="sorting screen" />
+  <img src="screenshots/sorting.png" width="90%" alt="sorting screen" />
 </p>
 
 | Algorithm      | Best case   | Average     | Worst case  | Space  | Stable? |
