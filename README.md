@@ -1,4 +1,4 @@
-# Sorting Visualizer
+# 📊 Sorting Visualizer
 
 An interactive, side-by-side sorting algorithm visualizer built with vanilla HTML, CSS, and JavaScript — no frameworks, no build step, one file.
 
