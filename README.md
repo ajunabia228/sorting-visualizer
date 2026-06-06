@@ -116,16 +116,6 @@ sorting-visualizer/
 
 ---
 
-## Roadmap
-
-- [ ] Step-through mode (Next / Prev buttons)
-- [ ] More algorithms: Shell sort, Radix sort, Tim sort
-- [ ] Custom array input (paste your own values)
-- [ ] Export comparison chart as PNG
-- [ ] Sound feedback (Web Audio API tones on swap)
-
----
-
 ## License
 
-MIT — free to use, fork, and build on.
+[MIT](LICENSE) — free to use, fork, and build on.
