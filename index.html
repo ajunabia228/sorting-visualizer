@@ -1,267 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Sorting Visualizer</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.33.0/dist/tabler-icons.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.33.0/dist/tabler-icons.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#ffffff;--surface:#f5f4f0;--surface2:#eeedea;
+      --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.22);
+      --text:#1a1a18;--muted:#6b6b66;--radius-md:8px;--radius-lg:12px;
+    }
+    @media(prefers-color-scheme:dark){
+      :root{--bg:#1c1c1a;--surface:#252523;--surface2:#2e2e2b;
+        --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.20);
+        --text:#e8e6de;--muted:#9c9a92;}
+    }
+    body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-    :root {
-      --bg:        #ffffff;
-      --surface:   #f5f4f0;
-      --surface2:  #eeedea;
-      --border:    rgba(0,0,0,0.10);
-      --border2:   rgba(0,0,0,0.22);
-      --text:      #1a1a18;
-      --muted:     #6b6b66;
-      --radius-md: 8px;
-      --radius-lg: 12px;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg:       #1c1c1a;
-        --surface:  #252523;
-        --surface2: #2e2e2b;
-        --border:   rgba(255,255,255,0.09);
-        --border2:  rgba(255,255,255,0.20);
-        --text:     #e8e6de;
-        --muted:    #9c9a92;
-      }
-    }
+    /* OVERLAY */
+    #qs-overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;padding:1rem;overflow-y:auto;}
+    #qs-modal{background:var(--bg);border:0.5px solid var(--border2);border-radius:16px;padding:2rem;max-width:540px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,0.18);max-height:90vh;overflow-y:auto;}
+    #qs-modal h2{font-size:1.125rem;font-weight:600;margin-bottom:.25rem;}
+    #qs-modal>p{font-size:.8125rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.5;}
+    .qs-label{font-size:.6875rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;margin-top:1.25rem;display:block;}
+    .qs-label:first-of-type{margin-top:0;}
+    .algo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem;}
+    .algo-card{border:0.5px solid var(--border2);border-radius:var(--radius-md);padding:10px 8px;cursor:pointer;transition:background .12s,border-color .12s;text-align:center;}
+    .algo-card:hover{background:var(--surface);}
+    .algo-card.selected{border-color:#378add;background:rgba(55,138,221,0.10);}
+    .algo-card-name{font-size:.75rem;font-weight:500;display:block;margin-bottom:2px;}
+    .algo-card-cx{font-size:.6rem;color:var(--muted);display:block;}
+    .preset-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.25rem;}
+    .preset-btn{padding:6px 12px;font-size:.75rem;border:0.5px solid var(--border2);border-radius:var(--radius-md);background:transparent;color:var(--text);cursor:pointer;transition:background .12s;}
+    .preset-btn:hover{background:var(--surface);}
+    .qs-row{display:flex;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap;}
+    .qs-row label{font-size:.8125rem;color:var(--muted);min-width:90px;}
+    .qs-row input[type=range]{flex:1;min-width:100px;accent-color:var(--text);}
+    .qs-row span{font-size:.8125rem;color:var(--muted);min-width:30px;}
+    .mode-toggle{display:flex;gap:6px;flex-wrap:wrap;}
+    .mode-btn{padding:5px 12px;font-size:.75rem;border:0.5px solid var(--border2);border-radius:var(--radius-md);background:transparent;color:var(--muted);cursor:pointer;transition:all .12s;}
+    .mode-btn.active{background:rgba(55,138,221,0.12);border-color:#378add;color:#185fa5;font-weight:500;}
+    @media(prefers-color-scheme:dark){.mode-btn.active{color:#85b7eb;}}
+    .custom-input{width:100%;padding:8px 10px;font-size:.8125rem;border:0.5px solid var(--border2);border-radius:var(--radius-md);background:var(--surface);color:var(--text);resize:none;}
+    .custom-input:focus{outline:none;border-color:#378add;}
+    .custom-hint{font-size:.6875rem;color:var(--muted);margin-top:4px;}
+    .qs-launch{margin-top:1.5rem;width:100%;padding:10px;font-size:.875rem;font-weight:600;background:#185fa5;color:#fff;border:none;border-radius:var(--radius-md);cursor:pointer;transition:background .15s;}
+    .qs-launch:hover{background:#1270b8;}
 
-    body {
-      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-    }
+    /* APP */
+    #app{padding:1.5rem 1.25rem;display:none;}
+    .topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem;}
+    .topbar h1{font-size:1.125rem;font-weight:500;margin-right:4px;}
+    .badge{font-size:.6875rem;padding:2px 8px;border-radius:999px;border:0.5px solid var(--border2);color:var(--muted);cursor:pointer;background:transparent;}
+    .badge:hover{background:var(--surface);}
+    .controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:1.25rem;}
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;font-size:.8125rem;font-weight:500;border:0.5px solid var(--border2);border-radius:var(--radius-md);background:transparent;color:var(--text);cursor:pointer;transition:background .13s;white-space:nowrap;}
+    .btn:hover{background:var(--surface);}
+    .btn:active{transform:scale(.97);}
+    .btn.primary{background:rgba(55,138,221,0.12);border-color:rgba(55,138,221,0.4);color:#185fa5;}
+    .btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+    @media(prefers-color-scheme:dark){.btn.primary{color:#85b7eb;}}
+    .sep{width:.5px;height:22px;background:var(--border2);}
+    .ctrl-label{font-size:.8125rem;color:var(--muted);}
+    input[type=range]{accent-color:var(--text);vertical-align:middle;}
+    .case-toggle{display:flex;gap:0;border:0.5px solid var(--border2);border-radius:var(--radius-md);overflow:hidden;}
+    .case-btn{padding:5px 11px;font-size:.75rem;font-weight:500;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:background .12s,color .12s;}
+    .case-btn+.case-btn{border-left:0.5px solid var(--border2);}
+    .case-btn.active{background:var(--surface2);color:var(--text);}
 
-    /* ── QUICK START OVERLAY ── */
-    #qs-overlay {
-      position: fixed; inset: 0; z-index: 100;
-      background: rgba(0,0,0,0.45);
-      display: flex; align-items: center; justify-content: center;
-      padding: 1rem;
-    }
-    #qs-modal {
-      background: var(--bg);
-      border: 0.5px solid var(--border2);
-      border-radius: 16px;
-      padding: 2rem;
-      max-width: 520px; width: 100%;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.18);
-    }
-    #qs-modal h2 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.25rem; }
-    #qs-modal p  { font-size: 0.8125rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.5; }
-    .qs-section-label {
-      font-size: 0.6875rem; font-weight: 600; letter-spacing: .06em;
-      text-transform: uppercase; color: var(--muted);
-      margin-bottom: 8px; margin-top: 1.25rem;
-    }
-    .qs-section-label:first-of-type { margin-top: 0; }
-    .algo-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
-      margin-bottom: 1.25rem;
-    }
-    .algo-card {
-      border: 0.5px solid var(--border2);
-      border-radius: var(--radius-md);
-      padding: 10px 8px;
-      cursor: pointer;
-      transition: background .12s, border-color .12s;
-      text-align: center;
-    }
-    .algo-card:hover { background: var(--surface); }
-    .algo-card.selected {
-      border-color: #378add;
-      background: rgba(55,138,221,0.10);
-    }
-    .algo-card-name  { font-size: 0.75rem; font-weight: 500; display: block; margin-bottom: 2px; }
-    .algo-card-complexity { font-size: 0.6rem; color: var(--muted); display: block; }
-    .preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.25rem; }
-    .preset-btn {
-      padding: 6px 12px; font-size: 0.75rem;
-      border: 0.5px solid var(--border2); border-radius: var(--radius-md);
-      background: transparent; color: var(--text); cursor: pointer;
-      transition: background .12s;
-    }
-    .preset-btn:hover { background: var(--surface); }
-    .qs-row { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; flex-wrap: wrap; }
-    .qs-row label { font-size: 0.8125rem; color: var(--muted); min-width: 90px; }
-    .qs-row input[type=range] { flex: 1; min-width: 100px; accent-color: var(--text); }
-    .qs-row span { font-size: 0.8125rem; color: var(--muted); min-width: 30px; }
-    .mode-toggle {
-      display: flex; gap: 6px; flex-wrap: wrap;
-    }
-    .mode-btn {
-      padding: 5px 12px; font-size: 0.75rem;
-      border: 0.5px solid var(--border2); border-radius: var(--radius-md);
-      background: transparent; color: var(--muted); cursor: pointer; transition: all .12s;
-    }
-    .mode-btn.active {
-      background: rgba(55,138,221,0.12); border-color: #378add; color: #185fa5; font-weight: 500;
-    }
-    @media (prefers-color-scheme: dark) { .mode-btn.active { color: #85b7eb; } }
-    .qs-launch {
-      margin-top: 1.5rem; width: 100%; padding: 10px;
-      font-size: 0.875rem; font-weight: 600;
-      background: #185fa5; color: #fff;
-      border: none; border-radius: var(--radius-md); cursor: pointer;
-      transition: background .15s;
-    }
-    .qs-launch:hover { background: #1270b8; }
+    /* step controls */
+    .step-controls{display:none;align-items:center;gap:8px;padding:6px 10px;border:0.5px solid var(--border2);border-radius:var(--radius-md);background:var(--surface);}
+    .step-controls.visible{display:flex;}
+    .step-label{font-size:.75rem;color:var(--muted);min-width:70px;text-align:center;}
 
-    /* ── MAIN APP ── */
-    #app { padding: 1.5rem 1.25rem; display: none; }
-
-    .topbar {
-      display: flex; align-items: center; gap: 10px;
-      flex-wrap: wrap; margin-bottom: 1.25rem;
-    }
-    .topbar h1 { font-size: 1.125rem; font-weight: 500; margin-right: 4px; }
-    .topbar .badge {
-      font-size: 0.6875rem; padding: 2px 8px;
-      border-radius: 999px; border: 0.5px solid var(--border2);
-      color: var(--muted); cursor: pointer;
-    }
-    .topbar .badge:hover { background: var(--surface); }
-    .controls {
-      display: flex; align-items: center; gap: 10px;
-      flex-wrap: wrap; margin-bottom: 1.25rem;
-    }
-    .btn {
-      display: inline-flex; align-items: center; gap: 5px;
-      padding: 6px 13px; font-size: 0.8125rem; font-weight: 500;
-      border: 0.5px solid var(--border2); border-radius: var(--radius-md);
-      background: transparent; color: var(--text); cursor: pointer;
-      transition: background .13s; white-space: nowrap;
-    }
-    .btn:hover { background: var(--surface); }
-    .btn:active { transform: scale(.97); }
-    .btn.primary {
-      background: rgba(55,138,221,0.12); border-color: rgba(55,138,221,0.4); color: #185fa5;
-    }
-    @media (prefers-color-scheme: dark) { .btn.primary { color: #85b7eb; } }
-    .sep { width: 0.5px; height: 22px; background: var(--border2); }
-    .ctrl-label { font-size: 0.8125rem; color: var(--muted); }
-    input[type=range] { accent-color: var(--text); vertical-align: middle; }
-
-    /* case toggle */
-    .case-toggle { display: flex; gap: 0; border: 0.5px solid var(--border2); border-radius: var(--radius-md); overflow: hidden; }
-    .case-btn {
-      padding: 5px 11px; font-size: 0.75rem; font-weight: 500;
-      border: none; background: transparent; color: var(--muted); cursor: pointer;
-      transition: background .12s, color .12s;
-    }
-    .case-btn + .case-btn { border-left: 0.5px solid var(--border2); }
-    .case-btn.active { background: var(--surface2); color: var(--text); }
+    /* sound toggle */
+    .sound-btn{font-size:.75rem;padding:5px 10px;}
+    .sound-btn.on{color:#1D9E75;border-color:#1D9E75;}
 
     /* panels */
-    .panels {
-      display: grid;
-      grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
-      gap: 10px; margin-bottom: 12px;
-    }
-    @media (max-width: 640px) { .panels { --cols: 1 !important; } }
-    .panel {
-      border: 0.5px solid var(--border); border-radius: var(--radius-lg);
-      padding: 10px 12px; background: var(--bg);
-    }
-    .panel-head {
-      display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 6px;
-    }
-    .panel-name  { font-size: 0.75rem; font-weight: 500; }
-    .panel-stats { font-size: 0.6rem; color: var(--muted); }
-    .done-badge {
-      display: inline-block; font-size: 0.6rem; padding: 1px 5px;
-      border-radius: 999px; background: rgba(29,158,117,0.15); color: #0f6e56; margin-left: 5px;
-    }
-    @media (prefers-color-scheme: dark) { .done-badge { color: #5dcaa5; background: rgba(29,158,117,0.22); } }
-
-    .bars {
-      display: flex; align-items: flex-end; gap: 2px;
-      height: 120px; width: 100%;
-    }
-    .bar {
-      flex: 1; border-radius: 2px 2px 0 0;
-      transition: height 0.07s, background 0.07s; min-width: 2px;
-    }
-    .bar.default  { background: var(--border2); }
-    .bar.compare  { background: #EF9F27; }
-    .bar.swap     { background: #E24B4A; }
-    .bar.sorted   { background: #1D9E75; }
-    .bar.pivot    { background: #7F77DD; }
-    .bar.select   { background: #D4537E; }
+    .panels{display:grid;grid-template-columns:repeat(var(--cols,3),minmax(0,1fr));gap:10px;margin-bottom:12px;}
+    @media(max-width:640px){.panels{--cols:1 !important;}}
+    .panel{border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:10px 12px;background:var(--bg);}
+    .panel-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+    .panel-name{font-size:.75rem;font-weight:500;}
+    .panel-stats{font-size:.6rem;color:var(--muted);}
+    .done-badge{display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:999px;background:rgba(29,158,117,0.15);color:#0f6e56;margin-left:5px;}
+    @media(prefers-color-scheme:dark){.done-badge{color:#5dcaa5;background:rgba(29,158,117,0.22);}}
+    .bars{display:flex;align-items:flex-end;gap:2px;height:120px;width:100%;}
+    .bar{flex:1;border-radius:2px 2px 0 0;transition:height .07s,background .07s;min-width:2px;}
+    .bar.default{background:var(--border2);}
+    .bar.compare{background:#EF9F27;}
+    .bar.swap{background:#E24B4A;}
+    .bar.sorted{background:#1D9E75;}
+    .bar.pivot{background:#7F77DD;}
+    .bar.select{background:#D4537E;}
 
     /* legend */
-    .legend {
-      display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 1.25rem;
-    }
-    .leg { display: flex; align-items: center; gap: 4px; font-size: 0.6875rem; color: var(--muted); }
-    .leg-dot { width: 9px; height: 9px; border-radius: 2px; }
+    .legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1.25rem;}
+    .leg{display:flex;align-items:center;gap:4px;font-size:.6875rem;color:var(--muted);}
+    .leg-dot{width:9px;height:9px;border-radius:2px;}
 
-    /* complexity graph */
-    .graph-card {
-      border: 0.5px solid var(--border); border-radius: var(--radius-lg);
-      padding: 14px 16px; background: var(--bg); margin-top: 4px;
-    }
-    .graph-head {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 12px;
-    }
-    .graph-title { font-size: 0.8125rem; font-weight: 500; }
-    .graph-sub   { font-size: 0.6875rem; color: var(--muted); }
-    #chartWrap { position: relative; height: 200px; }
+    /* graph */
+    .graph-card{border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;background:var(--bg);margin-top:4px;}
+    .graph-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px;flex-wrap:wrap;}
+    .graph-title{font-size:.8125rem;font-weight:500;}
+    .graph-sub{font-size:.6875rem;color:var(--muted);}
+    #chartWrap{position:relative;height:200px;}
   </style>
 </head>
 <body>
 
-<!-- ── QUICK START ── -->
+<!-- QUICK START -->
 <div id="qs-overlay">
   <div id="qs-modal">
     <h2>Sorting Visualizer</h2>
-    <p>Pick algorithms, a starting array type, and your speed — then launch.</p>
+    <p>Choose algorithms, array input, type, and speed —> then launch! 🚀</p>
 
-    <div class="qs-section-label">Algorithms</div>
+    <span class="qs-label">Algorithms</span>
     <div class="algo-grid" id="algoGrid">
-      <div class="algo-card selected" data-id="bubble">
-        <span class="algo-card-name">Bubble sort</span>
-        <span class="algo-card-complexity">O(n²)</span>
-      </div>
-      <div class="algo-card selected" data-id="merge">
-        <span class="algo-card-name">Merge sort</span>
-        <span class="algo-card-complexity">O(n log n)</span>
-      </div>
-      <div class="algo-card selected" data-id="quick">
-        <span class="algo-card-name">Quick Sort</span>
-        <span class="algo-card-complexity">O(n log n) avg</span>
-      </div>
-      <div class="algo-card selected" data-id="insertion">
-        <span class="algo-card-name">Insertion sort</span>
-        <span class="algo-card-complexity">O(n²)</span>
-      </div>
-      <div class="algo-card selected" data-id="selection">
-        <span class="algo-card-name">Selection sort</span>
-        <span class="algo-card-complexity">O(n²)</span>
-      </div>
-      <div class="algo-card selected" data-id="heap">
-        <span class="algo-card-name">Heap sort</span>
-        <span class="algo-card-complexity">O(n log n)</span>
-      </div>
+      <div class="algo-card selected" data-id="bubble"><span class="algo-card-name">Bubble sort</span><span class="algo-card-cx">O(n²)</span></div>
+      <div class="algo-card selected" data-id="insertion"><span class="algo-card-name">Insertion sort</span><span class="algo-card-cx">O(n²)</span></div>
+      <div class="algo-card selected" data-id="selection"><span class="algo-card-name">Selection sort</span><span class="algo-card-cx">O(n²)</span></div>
+      <div class="algo-card selected" data-id="merge"><span class="algo-card-name">Merge sort</span><span class="algo-card-cx">O(n log n)</span></div>
+      <div class="algo-card selected" data-id="quick"><span class="algo-card-name">Quick Sort</span><span class="algo-card-cx">O(n log n) avg</span></div>
+      <div class="algo-card selected" data-id="heap"><span class="algo-card-name">Heap sort</span><span class="algo-card-cx">O(n log n)</span></div>
+      <div class="algo-card" data-id="shell"><span class="algo-card-name">Shell sort</span><span class="algo-card-cx">O(n log² n)</span></div>
+      <div class="algo-card" data-id="radix"><span class="algo-card-name">Radix sort</span><span class="algo-card-cx">O(nk)</span></div>
+      <div class="algo-card" data-id="tim"><span class="algo-card-name">Tim sort</span><span class="algo-card-cx">O(n log n)</span></div>
     </div>
 
-    <div class="qs-section-label">Array type</div>
+    <span class="qs-label">Array input</span>
+    <textarea id="customInput" class="custom-input" rows="2" placeholder="Leave blank for generated array — or paste comma-separated numbers e.g. 42, 7, 15, 3, 99"></textarea>
+    <p class="custom-hint">Values will be clamped to 1–200. Blanks are ignored.</p>
+
+    <span class="qs-label">Array type (for generated arrays)</span>
     <div class="mode-toggle" id="modeToggle" style="margin-bottom:1.25rem">
       <button class="mode-btn active" data-mode="random">Random</button>
-      <button class="mode-btn" data-mode="best">Best case (nearly sorted)</button>
-      <button class="mode-btn" data-mode="worst">Worst case (reverse sorted)</button>
+      <button class="mode-btn" data-mode="best">Best case</button>
+      <button class="mode-btn" data-mode="worst">Worst case</button>
     </div>
 
-    <div class="qs-section-label">Settings</div>
+    <span class="qs-label">Settings</span>
     <div class="qs-row">
       <label>Array size</label>
       <input type="range" id="qsSize" min="10" max="60" value="30" oninput="document.getElementById('qsSizeVal').textContent=this.value">
@@ -273,25 +155,26 @@
       <span id="qsSpeedVal">Medium</span>
     </div>
 
-    <div class="qs-section-label">Presets</div>
+    <span class="qs-label">Presets</span>
     <div class="preset-row">
-      <button class="preset-btn" onclick="applyPreset('quadratic')">O(n²) comparison</button>
-      <button class="preset-btn" onclick="applyPreset('nlogn')">O(n log n) only</button>
-      <button class="preset-btn" onclick="applyPreset('all')">All 6 algorithms</button>
+      <button class="preset-btn" onclick="applyPreset('quadratic')">O(n²) trio</button>
+      <button class="preset-btn" onclick="applyPreset('nlogn')">O(n log n) trio</button>
+      <button class="preset-btn" onclick="applyPreset('all')">All 9 algorithms</button>
       <button class="preset-btn" onclick="applyPreset('quickworst')">Quick Sort worst case</button>
+      <button class="preset-btn" onclick="applyPreset('new3')">Shell · Radix · Tim</button>
     </div>
 
     <button class="qs-launch" onclick="launchApp()">Launch visualizer →</button>
   </div>
 </div>
 
-<!-- ── MAIN APP ── -->
+<!-- MAIN APP -->
 <div id="app">
   <div class="topbar">
     <h1>Sorting Visualizer</h1>
-    <span class="badge" onclick="showQuickStart()"><i class="ti ti-settings" style="font-size:11px"></i> Configure</span>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-      <span class="ctrl-label" style="font-size:0.75rem">Array type:</span>
+    <button class="badge" onclick="showQuickStart()"><i class="ti ti-settings" style="font-size:11px"></i> Configure</button>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span class="ctrl-label" style="font-size:.75rem">Array type:</span>
       <div class="case-toggle">
         <button class="case-btn active" data-mode="random" onclick="setMode(this)">Random</button>
         <button class="case-btn" data-mode="best" onclick="setMode(this)">Best case</button>
@@ -301,27 +184,32 @@
   </div>
 
   <div class="controls">
-    <button class="btn primary" id="startBtn" onclick="startAll()">
-      <i class="ti ti-player-play"></i> Sort
-    </button>
-    <button class="btn" onclick="resetAll()">
-      <i class="ti ti-refresh"></i> New array
-    </button>
+    <button class="btn primary" id="startBtn" onclick="startAll()"><i class="ti ti-player-play"></i> Sort</button>
+    <button class="btn" onclick="resetAll()"><i class="ti ti-refresh"></i> New array</button>
+    <div class="sep"></div>
+    <!-- Step-through controls -->
+    <button class="btn" id="stepModeBtn" onclick="toggleStepMode()" title="Step-through mode"><i class="ti ti-step-into"></i> Step</button>
+    <div class="step-controls" id="stepControls">
+      <button class="btn" id="prevBtn" onclick="stepAll(-1)" disabled><i class="ti ti-arrow-left"></i></button>
+      <span class="step-label" id="stepLabel">step 0</span>
+      <button class="btn" id="nextBtn" onclick="stepAll(1)"><i class="ti ti-arrow-right"></i></button>
+    </div>
     <div class="sep"></div>
     <span class="ctrl-label">Size</span>
-    <input type="range" id="sizeSlider" min="10" max="60" value="30"
-           oninput="onSizeChange(this.value)" style="width:70px">
-    <span id="sizeVal" style="font-size:0.8125rem;color:var(--muted);min-width:20px">30</span>
+    <input type="range" id="sizeSlider" min="10" max="60" value="30" oninput="onSizeChange(this.value)" style="width:70px">
+    <span id="sizeVal" style="font-size:.8125rem;color:var(--muted);min-width:20px">30</span>
     <div class="sep"></div>
     <span class="ctrl-label">Speed</span>
     <input type="range" id="speedSlider" min="1" max="5" value="3" style="width:70px">
+    <div class="sep"></div>
+    <button class="btn sound-btn" id="soundBtn" onclick="toggleSound()" title="Sound feedback"><i class="ti ti-volume"></i> Sound</button>
   </div>
 
   <div class="panels" id="panelsGrid"></div>
 
   <div class="legend">
     <div class="leg"><div class="leg-dot" style="background:#EF9F27"></div>Comparing</div>
-    <div class="leg"><div class="leg-dot" style="background:#E24B4A"></div>Swapping / placing</div>
+    <div class="leg"><div class="leg-dot" style="background:#E24B4A"></div>Swapping</div>
     <div class="leg"><div class="leg-dot" style="background:#7F77DD"></div>Pivot</div>
     <div class="leg"><div class="leg-dot" style="background:#D4537E"></div>Min / selected</div>
     <div class="leg"><div class="leg-dot" style="background:#1D9E75"></div>Sorted</div>
@@ -330,473 +218,570 @@
   <div class="graph-card">
     <div class="graph-head">
       <span class="graph-title">Comparisons over time</span>
-      <span class="graph-sub" id="graphSub">Live — updates as algorithms run</span>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <span class="graph-sub" id="graphSub">Live — updates as algorithms run</span>
+        <button class="btn" onclick="exportChart()" style="font-size:.6875rem;padding:4px 10px;"><i class="ti ti-download"></i> Export PNG</button>
+      </div>
     </div>
     <div id="chartWrap"><canvas id="compChart"></canvas></div>
   </div>
 </div>
 
 <script>
-/* ══════════════════════════════════════════
-   CONFIG
-══════════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   ALGO REGISTRY
+═══════════════════════════════════════ */
 const ALGOS = {
-  bubble:    { name: 'Bubble sort',    complexity: 'O(n²)',         color: '#378add' },
-  insertion: { name: 'Insertion sort', complexity: 'O(n²)',         color: '#EF9F27' },
-  selection: { name: 'Selection sort', complexity: 'O(n²)',         color: '#D4537E' },
-  merge:     { name: 'Merge sort',     complexity: 'O(n log n)',    color: '#1D9E75' },
-  quick:     { name: 'Quick Sort',     complexity: 'O(n log n) avg',color: '#7F77DD' },
-  heap:      { name: 'Heap sort',      complexity: 'O(n log n)',    color: '#E24B4A' },
+  bubble:    { name:'Bubble sort',    complexity:'O(n²)',          color:'#378add' },
+  insertion: { name:'Insertion sort', complexity:'O(n²)',          color:'#EF9F27' },
+  selection: { name:'Selection sort', complexity:'O(n²)',          color:'#D4537E' },
+  merge:     { name:'Merge sort',     complexity:'O(n log n)',     color:'#1D9E75' },
+  quick:     { name:'Quick Sort',     complexity:'O(n log n) avg', color:'#7F77DD' },
+  heap:      { name:'Heap sort',      complexity:'O(n log n)',     color:'#E24B4A' },
+  shell:     { name:'Shell sort',     complexity:'O(n log² n)',    color:'#BA7517' },
+  radix:     { name:'Radix sort',     complexity:'O(nk)',          color:'#0F6E56' },
+  tim:       { name:'Tim sort',       complexity:'O(n log n)',     color:'#533AB7' },
 };
 
-let activeAlgos = ['bubble','merge','quick','insertion','selection','heap'];
-let mode = 'random'; // random | best | worst
-let n = 30, running = false, timers = [], arr = [];
-let compChart = null, chartData = {};
+let activeAlgos = ['bubble','insertion','selection','merge','quick','heap'];
+let mode = 'random', n = 30, running = false, timers = [], arr = [];
+let compChart = null;
 
-const delay = () => Math.max(4, [250, 90, 38, 16, 5][+document.getElementById('speedSlider').value - 1]);
+/* step-through state */
+let stepMode = false;
+let allSteps = {};    // id -> steps[]
+let stepCursors = {}; // id -> current index
 
-/* ══════════════════════════════════════════
+/* sound */
+let soundEnabled = false, audioCtx = null;
+
+const delay = () => Math.max(4,[250,90,38,16,5][+document.getElementById('speedSlider').value-1]);
+
+/* ═══════════════════════════════════════
+   SOUND
+═══════════════════════════════════════ */
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function playTone(freq = 440, type = 'sine', dur = 0.06) {
+  if (!soundEnabled) return;
+  ensureAudio();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
+  osc.start(); osc.stop(audioCtx.currentTime + dur);
+}
+// Map bar value (5-100) → frequency (200-1000 Hz)
+function valToFreq(v) { return 200 + (v / 100) * 800; }
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById('soundBtn');
+  btn.classList.toggle('on', soundEnabled);
+  btn.innerHTML = soundEnabled
+    ? '<i class="ti ti-volume"></i> Sound on'
+    : '<i class="ti ti-volume-off"></i> Sound';
+  if (soundEnabled) ensureAudio();
+}
+
+/* ═══════════════════════════════════════
    ARRAY GENERATORS
-══════════════════════════════════════════ */
-function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+═══════════════════════════════════════ */
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 
 function genArr(size, m) {
-  if (m === 'best') {
-    // nearly sorted: sorted with ~5% swapped
-    const a = Array.from({ length: size }, (_, i) => Math.round(5 + (i / (size - 1)) * 95));
-    const swaps = Math.max(1, Math.floor(size * 0.05));
-    for (let k = 0; k < swaps; k++) {
-      const i = rnd(0, size - 1), j = rnd(0, size - 1);
-      [a[i], a[j]] = [a[j], a[i]];
-    }
+  if (m==='best') {
+    const a = Array.from({length:size},(_,i)=>Math.round(5+(i/(size-1))*95));
+    const sw = Math.max(1,Math.floor(size*.05));
+    for(let k=0;k<sw;k++){const i=rnd(0,size-1),j=rnd(0,size-1);[a[i],a[j]]=[a[j],a[i]];}
     return a;
   }
-  if (m === 'worst') {
-    return Array.from({ length: size }, (_, i) => Math.round(100 - (i / (size - 1)) * 95));
-  }
-  return Array.from({ length: size }, () => rnd(5, 100));
+  if (m==='worst') return Array.from({length:size},(_,i)=>Math.round(100-(i/(size-1))*95));
+  return Array.from({length:size},()=>rnd(5,100));
 }
 
-/* ══════════════════════════════════════════
-   QUICK START LOGIC
-══════════════════════════════════════════ */
-document.getElementById('algoGrid').addEventListener('click', e => {
-  const card = e.target.closest('.algo-card');
-  if (!card) return;
-  card.classList.toggle('selected');
-});
-
-document.getElementById('modeToggle').addEventListener('click', e => {
-  const btn = e.target.closest('.mode-btn');
-  if (!btn) return;
-  document.querySelectorAll('#modeToggle .mode-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-});
-
-function applyPreset(p) {
-  const cards = document.querySelectorAll('.algo-card');
-  cards.forEach(c => c.classList.remove('selected'));
-  if (p === 'quadratic') ['bubble','insertion','selection'].forEach(id => document.querySelector(`[data-id="${id}"]`).classList.add('selected'));
-  if (p === 'nlogn')     ['merge','quick','heap'].forEach(id => document.querySelector(`[data-id="${id}"]`).classList.add('selected'));
-  if (p === 'all')       cards.forEach(c => c.classList.add('selected'));
-  if (p === 'quickworst') {
-    document.querySelector('[data-id="quick"]').classList.add('selected');
-    document.querySelectorAll('#modeToggle .mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === 'worst'));
-  }
+function parseCustomInput(raw) {
+  const vals = raw.split(/[\s,;]+/).map(s=>parseInt(s,10)).filter(v=>!isNaN(v)).map(v=>Math.min(200,Math.max(1,v)));
+  return vals.length >= 2 ? vals : null;
 }
 
-function launchApp() {
-  const selected = [...document.querySelectorAll('.algo-card.selected')].map(c => c.dataset.id);
-  if (!selected.length) { alert('Select at least one algorithm.'); return; }
-  activeAlgos = selected;
-  mode = document.querySelector('#modeToggle .mode-btn.active').dataset.mode;
-  n = +document.getElementById('qsSize').value;
-  document.getElementById('sizeSlider').value = n;
-  document.getElementById('sizeVal').textContent = n;
-  document.getElementById('speedSlider').value = document.getElementById('qsSpeed').value;
-  document.getElementById('qs-overlay').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
+/* ═══════════════════════════════════════
+   QUICK START
+═══════════════════════════════════════ */
+document.getElementById('algoGrid').addEventListener('click', e=>{
+  const c=e.target.closest('.algo-card'); if(c) c.classList.toggle('selected');
+});
+document.getElementById('modeToggle').addEventListener('click', e=>{
+  const b=e.target.closest('.mode-btn'); if(!b) return;
+  document.querySelectorAll('#modeToggle .mode-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+});
+
+function applyPreset(p){
+  document.querySelectorAll('.algo-card').forEach(c=>c.classList.remove('selected'));
+  const sel=ids=>ids.forEach(id=>document.querySelector(`[data-id="${id}"]`).classList.add('selected'));
+  if(p==='quadratic') sel(['bubble','insertion','selection']);
+  if(p==='nlogn')     sel(['merge','quick','heap']);
+  if(p==='all')       document.querySelectorAll('.algo-card').forEach(c=>c.classList.add('selected'));
+  if(p==='quickworst'){ sel(['quick']); document.querySelectorAll('#modeToggle .mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode==='worst')); }
+  if(p==='new3')      sel(['shell','radix','tim']);
+}
+
+function launchApp(){
+  const selected=[...document.querySelectorAll('.algo-card.selected')].map(c=>c.dataset.id);
+  if(!selected.length){alert('Select at least one algorithm.');return;}
+  activeAlgos=selected;
+  mode=document.querySelector('#modeToggle .mode-btn.active').dataset.mode;
+
+  // custom array?
+  const raw=document.getElementById('customInput').value.trim();
+  const custom=raw ? parseCustomInput(raw) : null;
+
+  n=custom ? custom.length : +document.getElementById('qsSize').value;
+  document.getElementById('sizeSlider').value=Math.min(60,Math.max(10,n));
+  document.getElementById('sizeVal').textContent=n;
+  document.getElementById('speedSlider').value=document.getElementById('qsSpeed').value;
+  document.getElementById('qs-overlay').style.display='none';
+  document.getElementById('app').style.display='block';
   syncCaseToggle();
   buildPanels();
   initChart();
-  resetAll();
+  if(custom) { arr=custom; renderAll(); }
+  else resetAll();
 }
 
-function showQuickStart() {
-  document.getElementById('qs-overlay').style.display = 'flex';
-}
+function showQuickStart(){document.getElementById('qs-overlay').style.display='flex';}
 
-/* ══════════════════════════════════════════
+/* ═══════════════════════════════════════
    CASE TOGGLE
-══════════════════════════════════════════ */
-function setMode(btn) {
-  mode = btn.dataset.mode;
-  document.querySelectorAll('.case-btn').forEach(b => b.classList.toggle('active', b === btn));
+═══════════════════════════════════════ */
+function setMode(btn){
+  mode=btn.dataset.mode;
+  document.querySelectorAll('.case-btn').forEach(b=>b.classList.toggle('active',b===btn));
   resetAll();
 }
-
-function syncCaseToggle() {
-  document.querySelectorAll('.case-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+function syncCaseToggle(){
+  document.querySelectorAll('.case-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
 }
 
-/* ══════════════════════════════════════════
+/* ═══════════════════════════════════════
+   STEP-THROUGH MODE
+═══════════════════════════════════════ */
+function toggleStepMode(){
+  stepMode=!stepMode;
+  const btn=document.getElementById('stepModeBtn');
+  const ctrl=document.getElementById('stepControls');
+  btn.classList.toggle('primary',stepMode);
+  ctrl.classList.toggle('visible',stepMode);
+  if(stepMode){ stop(); precomputeAll(); updateStepLabel(); }
+  else { allSteps={}; stepCursors={}; }
+}
+
+function precomputeAll(){
+  allSteps={};stepCursors={};
+  const a=[...arr];
+  activeAlgos.forEach(id=>{
+    allSteps[id]=computeSteps(id,[...a]);
+    stepCursors[id]=0;
+  });
+  updateStepLabel();
+}
+
+function stepAll(dir){
+  if(!stepMode) return;
+  const maxLen=Math.max(...activeAlgos.map(id=>(allSteps[id]||[]).length));
+  const newCursor=Math.min(maxLen-1,Math.max(0,(stepCursors[activeAlgos[0]]||0)+dir));
+  activeAlgos.forEach(id=>{
+    const steps=allSteps[id]||[];
+    stepCursors[id]=Math.min(steps.length-1,newCursor);
+    const s=steps[stepCursors[id]];
+    if(s){ renderBars(id,s.arr,s.state); showStats(id,s.comps,s.swaps,s.done||false); }
+    if(s && s.state){
+      const swapped=Object.entries(s.state).filter(([,v])=>v==='swap').map(([k])=>s.arr[+k]);
+      if(swapped.length) playTone(valToFreq(swapped[0]),'triangle');
+    }
+  });
+  updateStepLabel();
+  document.getElementById('prevBtn').disabled=newCursor<=0;
+  document.getElementById('nextBtn').disabled=newCursor>=maxLen-1;
+  // update chart at this step
+  if(compChart){
+    const labels=Array.from({length:newCursor+1},(_,i)=>i);
+    compChart.data.labels=labels;
+    activeAlgos.forEach(id=>{
+      const ds=compChart.data.datasets.find(d=>d.label===ALGOS[id].name);
+      if(ds) ds.data=(allSteps[id]||[]).slice(0,newCursor+1).map(s=>s.comps);
+    });
+    compChart.update('none');
+  }
+}
+
+function updateStepLabel(){
+  const cur=stepCursors[activeAlgos[0]]||0;
+  const max=Math.max(...activeAlgos.map(id=>(allSteps[id]||[]).length));
+  document.getElementById('stepLabel').textContent=`step ${cur+1} / ${max}`;
+}
+
+function computeSteps(id,a){
+  const fn={bubble:computeBubble,insertion:computeInsertion,selection:computeSelection,
+            merge:computeMerge,quick:computeQuick,heap:computeHeap,
+            shell:computeShell,radix:computeRadix,tim:computeTim}[id];
+  return fn ? fn(a) : [];
+}
+
+/* ═══════════════════════════════════════
    PANEL BUILDER
-══════════════════════════════════════════ */
-function buildPanels() {
-  const grid = document.getElementById('panelsGrid');
-  grid.innerHTML = '';
-  const cols = Math.min(activeAlgos.length, activeAlgos.length <= 3 ? activeAlgos.length : activeAlgos.length <= 4 ? 2 : 3);
-  grid.style.setProperty('--cols', cols);
-  activeAlgos.forEach(id => {
-    const algo = ALGOS[id];
-    grid.innerHTML += `
-      <div class="panel" id="panel-${id}">
-        <div class="panel-head">
-          <span class="panel-name">${algo.name}</span>
-          <span class="panel-stats" id="stat-${id}">${algo.complexity}</span>
-        </div>
-        <div class="bars" id="bars-${id}"></div>
-      </div>`;
+═══════════════════════════════════════ */
+function buildPanels(){
+  const grid=document.getElementById('panelsGrid');
+  grid.innerHTML='';
+  const cols=activeAlgos.length<=3?activeAlgos.length:activeAlgos.length<=4?2:3;
+  grid.style.setProperty('--cols',cols);
+  activeAlgos.forEach(id=>{
+    const algo=ALGOS[id];
+    grid.innerHTML+=`<div class="panel" id="panel-${id}">
+      <div class="panel-head">
+        <span class="panel-name">${algo.name}</span>
+        <span class="panel-stats" id="stat-${id}">${algo.complexity}</span>
+      </div>
+      <div class="bars" id="bars-${id}"></div>
+    </div>`;
   });
 }
 
-/* ══════════════════════════════════════════
+/* ═══════════════════════════════════════
    CHART
-══════════════════════════════════════════ */
-function initChart() {
-  if (compChart) { compChart.destroy(); compChart = null; }
-  chartData = {};
-  activeAlgos.forEach(id => { chartData[id] = []; });
-
-  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const gridColor = isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.07)';
-  const textColor = isDark ? '#9c9a92' : '#6b6b66';
-
-  const datasets = activeAlgos.map(id => ({
-    label: ALGOS[id].name,
-    data: [],
-    borderColor: ALGOS[id].color,
-    backgroundColor: 'transparent',
-    borderWidth: 1.5,
-    pointRadius: 0,
-    tension: 0.3,
-  }));
-
-  compChart = new Chart(document.getElementById('compChart'), {
-    type: 'line',
-    data: { labels: [], datasets },
-    options: {
-      animation: false,
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode: 'index', intersect: false },
-      plugins: {
-        legend: {
-          labels: { color: textColor, font: { size: 11 }, boxWidth: 12, padding: 12 }
-        },
-        tooltip: { enabled: true }
-      },
-      scales: {
-        x: {
-          ticks: { color: textColor, font: { size: 10 }, maxTicksLimit: 8 },
-          grid: { color: gridColor },
-          title: { display: true, text: 'Steps', color: textColor, font: { size: 10 } }
-        },
-        y: {
-          ticks: { color: textColor, font: { size: 10 } },
-          grid: { color: gridColor },
-          title: { display: true, text: 'Comparisons', color: textColor, font: { size: 10 } }
-        }
+═══════════════════════════════════════ */
+function initChart(){
+  if(compChart){compChart.destroy();compChart=null;}
+  const dark=window.matchMedia('(prefers-color-scheme:dark)').matches;
+  const gc=dark?'rgba(255,255,255,0.07)':'rgba(0,0,0,0.07)';
+  const tc=dark?'#9c9a92':'#6b6b66';
+  compChart=new Chart(document.getElementById('compChart'),{
+    type:'line',
+    data:{labels:[],datasets:activeAlgos.map(id=>({
+      label:ALGOS[id].name,data:[],borderColor:ALGOS[id].color,
+      backgroundColor:'transparent',borderWidth:1.5,pointRadius:0,tension:0.3,
+    }))},
+    options:{
+      animation:false,responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{labels:{color:tc,font:{size:11},boxWidth:12,padding:12}},tooltip:{enabled:true}},
+      scales:{
+        x:{ticks:{color:tc,font:{size:10},maxTicksLimit:8},grid:{color:gc},title:{display:true,text:'Steps',color:tc,font:{size:10}}},
+        y:{ticks:{color:tc,font:{size:10}},grid:{color:gc},title:{display:true,text:'Comparisons',color:tc,font:{size:10}}},
       }
     }
   });
 }
 
-let chartStep = 0;
-function pushChartPoint(id, comps) {
-  const ds = compChart.data.datasets.find(d => d.label === ALGOS[id].name);
-  if (!ds) return;
+let chartUpdateTimer=null;
+function pushChartPoint(id,comps){
+  const ds=compChart&&compChart.data.datasets.find(d=>d.label===ALGOS[id].name);
+  if(!ds) return;
   ds.data.push(comps);
-  if (ds.data.length > compChart.data.labels.length) {
-    compChart.data.labels.push(ds.data.length);
-  }
+  if(ds.data.length>compChart.data.labels.length) compChart.data.labels.push(ds.data.length);
 }
-let chartUpdateTimer = null;
-function scheduleChartUpdate() {
-  if (chartUpdateTimer) return;
-  chartUpdateTimer = setTimeout(() => {
-    if (compChart) compChart.update('none');
-    chartUpdateTimer = null;
-  }, 60);
+function scheduleChartUpdate(){
+  if(chartUpdateTimer) return;
+  chartUpdateTimer=setTimeout(()=>{if(compChart)compChart.update('none');chartUpdateTimer=null;},60);
 }
 
-/* ══════════════════════════════════════════
+function exportChart(){
+  if(!compChart) return;
+  const url=document.getElementById('compChart').toDataURL('image/png');
+  const a=document.createElement('a'); a.href=url; a.download='complexity-chart.png'; a.click();
+}
+
+/* ═══════════════════════════════════════
    RENDER HELPERS
-══════════════════════════════════════════ */
-function renderBars(id, vals, states = {}) {
-  const el = document.getElementById('bars-' + id);
-  if (!el) return;
-  const max = Math.max(...vals, 1);
-  el.innerHTML = '';
-  vals.forEach((v, i) => {
-    const b = document.createElement('div');
-    b.className = 'bar ' + (states[i] || 'default');
-    b.style.height = `${(v / max) * 100}%`;
+═══════════════════════════════════════ */
+function renderBars(id,vals,states={}){
+  const el=document.getElementById('bars-'+id); if(!el) return;
+  const max=Math.max(...vals,1); el.innerHTML='';
+  vals.forEach((v,i)=>{
+    const b=document.createElement('div');
+    b.className='bar '+(states[i]||'default');
+    b.style.height=`${(v/max)*100}%`;
     el.appendChild(b);
   });
 }
-
-function showStats(id, comps, swaps, done = false) {
-  const el = document.getElementById('stat-' + id);
-  if (!el) return;
-  el.innerHTML = `${comps} cmp · ${swaps} swp${done ? '<span class="done-badge">✓ done</span>' : ''}`;
+function showStats(id,comps,swaps,done=false){
+  const el=document.getElementById('stat-'+id); if(!el) return;
+  el.innerHTML=`${comps} cmp · ${swaps} swp${done?'<span class="done-badge">✓ done</span>':''}`;
+}
+function renderAll(){
+  activeAlgos.forEach(id=>{renderBars(id,[...arr]);showStats(id,0,0);});
 }
 
-/* ══════════════════════════════════════════
+/* ═══════════════════════════════════════
    CONTROLS
-══════════════════════════════════════════ */
-function onSizeChange(v) {
-  document.getElementById('sizeVal').textContent = v;
-  n = +v; resetAll();
+═══════════════════════════════════════ */
+function onSizeChange(v){document.getElementById('sizeVal').textContent=v;n=+v;resetAll();}
+
+function stop(){
+  running=false; timers.forEach(clearTimeout); timers=[];
+  if(chartUpdateTimer){clearTimeout(chartUpdateTimer);chartUpdateTimer=null;}
 }
 
-function resetAll() {
-  if (running) { running = false; timers.forEach(clearTimeout); timers = []; }
-  if (chartUpdateTimer) { clearTimeout(chartUpdateTimer); chartUpdateTimer = null; }
-  arr = genArr(n, mode);
-  activeAlgos.forEach(id => {
-    renderBars(id, [...arr]);
-    showStats(id, 0, 0);
-  });
-  if (compChart) {
-    compChart.data.labels = [];
-    compChart.data.datasets.forEach(ds => ds.data = []);
-    compChart.update('none');
-  }
-  const startBtn = document.getElementById('startBtn');
-  startBtn.innerHTML = '<i class="ti ti-player-play"></i> Sort';
-  startBtn.className = 'btn primary';
-  document.getElementById('graphSub').textContent = 'Live — updates as algorithms run';
+function resetAll(){
+  stop();
+  arr=genArr(n,mode);
+  renderAll();
+  if(compChart){compChart.data.labels=[];compChart.data.datasets.forEach(ds=>ds.data=[]);compChart.update('none');}
+  if(stepMode){precomputeAll();}
+  document.getElementById('startBtn').innerHTML='<i class="ti ti-player-play"></i> Sort';
+  document.getElementById('startBtn').className='btn primary';
+  document.getElementById('graphSub').textContent='Live — updates as algorithms run';
 }
 
-function startAll() {
-  if (running) return;
-  running = true;
-  document.getElementById('startBtn').innerHTML = '<i class="ti ti-player-pause"></i> Running…';
-  const a = [...arr];
-  activeAlgos.forEach(id => {
-    const fn = { bubble: playBubble, merge: playMerge, quick: playQuick,
-                 insertion: playInsertion, selection: playSelection, heap: playHeap }[id];
-    if (fn) fn([...a], id);
-  });
+function startAll(){
+  if(running) return;
+  if(stepMode){ alert('Disable step mode first to run automatically.'); return; }
+  running=true;
+  document.getElementById('startBtn').innerHTML='<i class="ti ti-player-pause"></i> Running…';
+  const a=[...arr];
+  activeAlgos.forEach(id=>playAlgo(id,[...a]));
 }
 
-function schedule(fn, ms) {
-  const t = setTimeout(fn, ms); timers.push(t); return t;
+function schedule(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t;}
+
+/* ═══════════════════════════════════════
+   ANIMATE (auto-play mode)
+═══════════════════════════════════════ */
+function playAlgo(id,a){
+  const steps=computeSteps(id,a);
+  animateSteps(steps,id);
 }
 
-/* ══════════════════════════════════════════
-   ANIMATE STEPS
-══════════════════════════════════════════ */
-function animateSteps(steps, id) {
-  let i = 0;
-  function next() {
-    if (!running || i >= steps.length) return;
-    const s = steps[i++];
-    renderBars(id, s.arr, s.state);
-    showStats(id, s.comps, s.swaps, s.done || false);
-    pushChartPoint(id, s.comps);
+function animateSteps(steps,id){
+  let i=0;
+  function next(){
+    if(!running||i>=steps.length) return;
+    const s=steps[i++];
+    renderBars(id,s.arr,s.state);
+    showStats(id,s.comps,s.swaps,s.done||false);
+    pushChartPoint(id,s.comps);
     scheduleChartUpdate();
-    if (s.done) {
-      // check if all done
-      const allDone = activeAlgos.every(aid => {
-        const el = document.getElementById('stat-' + aid);
-        return el && el.innerHTML.includes('done');
+    // sound: play on swap events
+    if(s.state && soundEnabled){
+      const swapped=Object.entries(s.state).filter(([,v])=>v==='swap').map(([k])=>s.arr[+k]);
+      if(swapped.length>0) playTone(valToFreq(swapped[0]),'sine',0.05);
+    }
+    if(s.done){
+      const allDone=activeAlgos.every(aid=>{
+        const el=document.getElementById('stat-'+aid);
+        return el&&el.innerHTML.includes('done');
       });
-      if (allDone) {
-        running = false;
-        document.getElementById('startBtn').innerHTML = '<i class="ti ti-check"></i> Complete';
-        document.getElementById('graphSub').textContent = 'Final — all algorithms finished';
+      if(allDone){
+        running=false;
+        document.getElementById('startBtn').innerHTML='<i class="ti ti-check"></i> Complete';
+        document.getElementById('graphSub').textContent='Final — all algorithms finished';
       }
       return;
     }
-    if (i < steps.length) schedule(next, delay());
+    if(i<steps.length) schedule(next,delay());
   }
-  schedule(next, delay());
+  schedule(next,delay());
 }
 
-/* ══════════════════════════════════════════
-   BUBBLE SORT
-══════════════════════════════════════════ */
-function playBubble(a, id) {
-  const steps = [], sorted = new Set();
-  let comps = 0, swaps = 0;
-  for (let i = 0; i < a.length; i++) {
-    for (let j = 0; j < a.length - i - 1; j++) {
+/* ═══════════════════════════════════════
+   STEP COMPUTERS  (return steps[])
+═══════════════════════════════════════ */
+function computeBubble(a){
+  const steps=[],sorted=new Set(); let comps=0,swaps=0;
+  for(let i=0;i<a.length;i++){
+    for(let j=0;j<a.length-i-1;j++){
       comps++;
-      steps.push({ arr: [...a], state: { [j]: 'compare', [j+1]: 'compare' }, comps, swaps });
-      if (a[j] > a[j+1]) {
-        swaps++; [a[j], a[j+1]] = [a[j+1], a[j]];
-        steps.push({ arr: [...a], state: { [j]: 'swap', [j+1]: 'swap' }, comps, swaps });
-      }
+      steps.push({arr:[...a],state:{[j]:'compare',[j+1]:'compare'},comps,swaps});
+      if(a[j]>a[j+1]){swaps++;[a[j],a[j+1]]=[a[j+1],a[j]];steps.push({arr:[...a],state:{[j]:'swap',[j+1]:'swap'},comps,swaps});}
     }
-    sorted.add(a.length - 1 - i);
-    const s = {}; sorted.forEach(x => s[x] = 'sorted');
-    steps.push({ arr: [...a], state: s, comps, swaps });
+    sorted.add(a.length-1-i);
+    const s={};sorted.forEach(x=>s[x]='sorted');steps.push({arr:[...a],state:s,comps,swaps});
   }
-  steps.push({ arr: [...a], state: Object.fromEntries(a.map((_,i)=>[i,'sorted'])), comps, swaps, done: true });
-  animateSteps(steps, id);
+  steps.push({arr:[...a],state:Object.fromEntries(a.map((_,i)=>[i,'sorted'])),comps,swaps,done:true});
+  return steps;
 }
 
-/* ══════════════════════════════════════════
-   INSERTION SORT
-══════════════════════════════════════════ */
-function playInsertion(a, id) {
-  const steps = [];
-  let comps = 0, swaps = 0;
-  const sorted = new Set([0]);
-  for (let i = 1; i < a.length; i++) {
-    let j = i;
-    while (j > 0) {
+function computeInsertion(a){
+  const steps=[]; let comps=0,swaps=0;const sorted=new Set([0]);
+  for(let i=1;i<a.length;i++){
+    let j=i;
+    while(j>0){
       comps++;
-      steps.push({ arr: [...a], state: { [j]: 'compare', [j-1]: 'compare', ...Object.fromEntries([...sorted].map(x=>[x,'sorted'])) }, comps, swaps });
-      if (a[j] < a[j-1]) {
-        swaps++; [a[j], a[j-1]] = [a[j-1], a[j]];
-        steps.push({ arr: [...a], state: { [j]: 'swap', [j-1]: 'swap' }, comps, swaps });
-        j--;
-      } else break;
+      steps.push({arr:[...a],state:{[j]:'compare',[j-1]:'compare',...Object.fromEntries([...sorted].map(x=>[x,'sorted']))},comps,swaps});
+      if(a[j]<a[j-1]){swaps++;[a[j],a[j-1]]=[a[j-1],a[j]];steps.push({arr:[...a],state:{[j]:'swap',[j-1]:'swap'},comps,swaps});j--;}
+      else break;
     }
     sorted.add(i);
-    const s = {}; sorted.forEach(x => s[x] = 'sorted');
-    steps.push({ arr: [...a], state: s, comps, swaps });
+    const s={};sorted.forEach(x=>s[x]='sorted');steps.push({arr:[...a],state:s,comps,swaps});
   }
-  steps.push({ arr: [...a], state: Object.fromEntries(a.map((_,i)=>[i,'sorted'])), comps, swaps, done: true });
-  animateSteps(steps, id);
+  steps.push({arr:[...a],state:Object.fromEntries(a.map((_,i)=>[i,'sorted'])),comps,swaps,done:true});
+  return steps;
 }
 
-/* ══════════════════════════════════════════
-   SELECTION SORT
-══════════════════════════════════════════ */
-function playSelection(a, id) {
-  const steps = [];
-  let comps = 0, swaps = 0;
-  const sorted = new Set();
-  for (let i = 0; i < a.length; i++) {
-    let minIdx = i;
-    for (let j = i + 1; j < a.length; j++) {
+function computeSelection(a){
+  const steps=[]; let comps=0,swaps=0;const sorted=new Set();
+  for(let i=0;i<a.length;i++){
+    let minIdx=i;
+    for(let j=i+1;j<a.length;j++){
       comps++;
-      steps.push({ arr: [...a], state: { [j]: 'compare', [minIdx]: 'select', ...Object.fromEntries([...sorted].map(x=>[x,'sorted'])) }, comps, swaps });
-      if (a[j] < a[minIdx]) minIdx = j;
+      steps.push({arr:[...a],state:{[j]:'compare',[minIdx]:'select',...Object.fromEntries([...sorted].map(x=>[x,'sorted']))},comps,swaps});
+      if(a[j]<a[minIdx]) minIdx=j;
     }
-    if (minIdx !== i) {
-      swaps++; [a[i], a[minIdx]] = [a[minIdx], a[i]];
-      steps.push({ arr: [...a], state: { [i]: 'swap', [minIdx]: 'swap' }, comps, swaps });
-    }
+    if(minIdx!==i){swaps++;[a[i],a[minIdx]]=[a[minIdx],a[i]];steps.push({arr:[...a],state:{[i]:'swap',[minIdx]:'swap'},comps,swaps});}
     sorted.add(i);
-    const s = {}; sorted.forEach(x => s[x] = 'sorted');
-    steps.push({ arr: [...a], state: s, comps, swaps });
+    const s={};sorted.forEach(x=>s[x]='sorted');steps.push({arr:[...a],state:s,comps,swaps});
   }
-  steps.push({ arr: [...a], state: Object.fromEntries(a.map((_,i)=>[i,'sorted'])), comps, swaps, done: true });
-  animateSteps(steps, id);
+  steps.push({arr:[...a],state:Object.fromEntries(a.map((_,i)=>[i,'sorted'])),comps,swaps,done:true});
+  return steps;
 }
 
-/* ══════════════════════════════════════════
-   MERGE SORT
-══════════════════════════════════════════ */
-function playMerge(a, id) {
-  const steps = [];
-  let comps = 0, swaps = 0;
-  function merge(arr, l, m, r) {
-    const L = arr.slice(l, m+1), R = arr.slice(m+1, r+1);
-    let i = 0, j = 0, k = l;
-    while (i < L.length && j < R.length) {
-      comps++;
-      steps.push({ arr: [...arr], state: { [l+i]: 'compare', [m+1+j]: 'compare' }, comps, swaps });
-      if (L[i] <= R[j]) arr[k++] = L[i++];
-      else { arr[k++] = R[j++]; swaps++; }
-      steps.push({ arr: [...arr], state: { [k-1]: 'swap' }, comps, swaps });
+function computeMerge(a){
+  const steps=[]; let comps=0,swaps=0;
+  function merge(arr,l,m,r){
+    const L=arr.slice(l,m+1),R=arr.slice(m+1,r+1);let i=0,j=0,k=l;
+    while(i<L.length&&j<R.length){
+      comps++;steps.push({arr:[...arr],state:{[l+i]:'compare',[m+1+j]:'compare'},comps,swaps});
+      if(L[i]<=R[j])arr[k++]=L[i++];else{arr[k++]=R[j++];swaps++;}
+      steps.push({arr:[...arr],state:{[k-1]:'swap'},comps,swaps});
     }
-    while (i < L.length) arr[k++] = L[i++];
-    while (j < R.length) arr[k++] = R[j++];
+    while(i<L.length)arr[k++]=L[i++];while(j<R.length)arr[k++]=R[j++];
   }
-  function ms(arr, l, r) {
-    if (l >= r) return;
-    const m = Math.floor((l+r)/2);
-    ms(arr, l, m); ms(arr, m+1, r);
-    merge(arr, l, m, r);
-  }
-  ms(a, 0, a.length-1);
-  steps.push({ arr: [...a], state: Object.fromEntries(a.map((_,i)=>[i,'sorted'])), comps, swaps, done: true });
-  animateSteps(steps, id);
+  function ms(arr,l,r){if(l>=r)return;const m=Math.floor((l+r)/2);ms(arr,l,m);ms(arr,m+1,r);merge(arr,l,m,r);}
+  ms(a,0,a.length-1);
+  steps.push({arr:[...a],state:Object.fromEntries(a.map((_,i)=>[i,'sorted'])),comps,swaps,done:true});
+  return steps;
 }
 
-/* ══════════════════════════════════════════
-   QUICK SORT
-══════════════════════════════════════════ */
-function playQuick(a, id) {
-  const steps = [];
-  let comps = 0, swaps = 0;
-  function partition(arr, l, r) {
-    const pv = arr[r]; let i = l - 1;
-    for (let j = l; j < r; j++) {
-      comps++;
-      steps.push({ arr: [...arr], state: { [j]: 'compare', [r]: 'pivot' }, comps, swaps });
-      if (arr[j] <= pv) {
-        i++; swaps++; [arr[i], arr[j]] = [arr[j], arr[i]];
-        steps.push({ arr: [...arr], state: { [i]: 'swap', [j]: 'swap', [r]: 'pivot' }, comps, swaps });
-      }
+function computeQuick(a){
+  const steps=[]; let comps=0,swaps=0;
+  function partition(arr,l,r){
+    const pv=arr[r];let i=l-1;
+    for(let j=l;j<r;j++){
+      comps++;steps.push({arr:[...arr],state:{[j]:'compare',[r]:'pivot'},comps,swaps});
+      if(arr[j]<=pv){i++;swaps++;[arr[i],arr[j]]=[arr[j],arr[i]];steps.push({arr:[...arr],state:{[i]:'swap',[j]:'swap',[r]:'pivot'},comps,swaps});}
     }
-    [arr[i+1], arr[r]] = [arr[r], arr[i+1]]; swaps++;
-    steps.push({ arr: [...arr], state: { [i+1]: 'sorted' }, comps, swaps });
-    return i+1;
+    [arr[i+1],arr[r]]=[arr[r],arr[i+1]];swaps++;steps.push({arr:[...arr],state:{[i+1]:'sorted'},comps,swaps});return i+1;
   }
-  function qs(arr, l, r) {
-    if (l >= r) return;
-    const p = partition(arr, l, r);
-    qs(arr, l, p-1); qs(arr, p+1, r);
-  }
-  qs(a, 0, a.length-1);
-  steps.push({ arr: [...a], state: Object.fromEntries(a.map((_,i)=>[i,'sorted'])), comps, swaps, done: true });
-  animateSteps(steps, id);
+  function qs(arr,l,r){if(l>=r)return;const p=partition(arr,l,r);qs(arr,l,p-1);qs(arr,p+1,r);}
+  qs(a,0,a.length-1);
+  steps.push({arr:[...a],state:Object.fromEntries(a.map((_,i)=>[i,'sorted'])),comps,swaps,done:true});
+  return steps;
 }
 
-/* ══════════════════════════════════════════
-   HEAP SORT
-══════════════════════════════════════════ */
-function playHeap(a, id) {
-  const steps = [];
-  let comps = 0, swaps = 0;
-  const sorted = new Set();
-
-  function heapify(arr, n, i) {
-    let largest = i, l = 2*i+1, r = 2*i+2;
-    comps++;
-    steps.push({ arr: [...arr], state: { [i]: 'compare', ...(l<n?{[l]:'compare'}:{}), ...(r<n?{[r]:'compare'}:{}) }, comps, swaps });
-    if (l < n && arr[l] > arr[largest]) largest = l;
-    if (r < n && arr[r] > arr[largest]) largest = r;
-    if (largest !== i) {
-      swaps++; [arr[i], arr[largest]] = [arr[largest], arr[i]];
-      steps.push({ arr: [...arr], state: { [i]: 'swap', [largest]: 'swap' }, comps, swaps });
-      heapify(arr, n, largest);
-    }
+function computeHeap(a){
+  const steps=[]; let comps=0,swaps=0;const sorted=new Set();
+  function heapify(arr,size,i){
+    let lg=i,l=2*i+1,r=2*i+2;comps++;
+    steps.push({arr:[...arr],state:{[i]:'compare',...(l<size?{[l]:'compare'}:{}),...(r<size?{[r]:'compare'}:{})},comps,swaps});
+    if(l<size&&arr[l]>arr[lg])lg=l;if(r<size&&arr[r]>arr[lg])lg=r;
+    if(lg!==i){swaps++;[arr[i],arr[lg]]=[arr[lg],arr[i]];steps.push({arr:[...arr],state:{[i]:'swap',[lg]:'swap'},comps,swaps});heapify(arr,size,lg);}
   }
-
-  // build max-heap
-  for (let i = Math.floor(a.length/2)-1; i >= 0; i--) heapify(a, a.length, i);
-
-  // extract
-  for (let i = a.length-1; i > 0; i--) {
-    swaps++; [a[0], a[i]] = [a[i], a[0]];
-    sorted.add(i);
-    const s = {}; sorted.forEach(x => s[x] = 'sorted');
-    steps.push({ arr: [...a], state: { [0]: 'swap', ...s }, comps, swaps });
-    heapify(a, i, 0);
+  for(let i=Math.floor(a.length/2)-1;i>=0;i--)heapify(a,a.length,i);
+  for(let i=a.length-1;i>0;i--){
+    swaps++;[a[0],a[i]]=[a[i],a[0]];sorted.add(i);
+    const s={};sorted.forEach(x=>s[x]='sorted');
+    steps.push({arr:[...a],state:{[0]:'swap',...s},comps,swaps});heapify(a,i,0);
   }
   sorted.add(0);
-  steps.push({ arr: [...a], state: Object.fromEntries(a.map((_,i)=>[i,'sorted'])), comps, swaps, done: true });
-  animateSteps(steps, id);
+  steps.push({arr:[...a],state:Object.fromEntries(a.map((_,i)=>[i,'sorted'])),comps,swaps,done:true});
+  return steps;
 }
+
+/* ─── SHELL SORT ─── */
+function computeShell(a){
+  const steps=[]; let comps=0,swaps=0;
+  // Ciura gap sequence
+  let gaps=[701,301,132,57,23,10,4,1].filter(g=>g<a.length);
+  if(!gaps.length)gaps=[1];
+  for(const gap of gaps){
+    for(let i=gap;i<a.length;i++){
+      let j=i;
+      while(j>=gap){
+        comps++;
+        steps.push({arr:[...a],state:{[j]:'compare',[j-gap]:'compare'},comps,swaps});
+        if(a[j]<a[j-gap]){swaps++;[a[j],a[j-gap]]=[a[j-gap],a[j]];steps.push({arr:[...a],state:{[j]:'swap',[j-gap]:'swap'},comps,swaps});j-=gap;}
+        else break;
+      }
+    }
+    steps.push({arr:[...a],state:{},comps,swaps});
+  }
+  steps.push({arr:[...a],state:Object.fromEntries(a.map((_,i)=>[i,'sorted'])),comps,swaps,done:true});
+  return steps;
+}
+
+/* ─── RADIX SORT (LSD, base 10) ─── */
+function computeRadix(a){
+  const steps=[]; let comps=0,swaps=0;
+  const max=Math.max(...a);
+  for(let exp=1;Math.floor(max/exp)>0;exp*=10){
+    const output=new Array(a.length).fill(0);
+    const count=new Array(10).fill(0);
+    // count
+    for(let i=0;i<a.length;i++){count[Math.floor(a[i]/exp)%10]++;}
+    for(let i=1;i<10;i++)count[i]+=count[i-1];
+    // build output
+    for(let i=a.length-1;i>=0;i--){
+      const digit=Math.floor(a[i]/exp)%10;
+      output[--count[digit]]=a[i];
+      comps++;
+      steps.push({arr:[...a],state:{[i]:'compare'},comps,swaps});
+    }
+    // copy back
+    for(let i=0;i<a.length;i++){
+      if(a[i]!==output[i]){swaps++;a[i]=output[i];steps.push({arr:[...a],state:{[i]:'swap'},comps,swaps});}
+    }
+    steps.push({arr:[...a],state:{},comps,swaps});
+  }
+  steps.push({arr:[...a],state:Object.fromEntries(a.map((_,i)=>[i,'sorted'])),comps,swaps,done:true});
+  return steps;
+}
+
+/* ─── TIM SORT (RUN=8 insertion + merge passes) ─── */
+function computeTim(a){
+  const steps=[]; let comps=0,swaps=0;const RUN=8;
+  // insertion sort on each run
+  for(let i=0;i<a.length;i+=RUN){
+    const end=Math.min(i+RUN-1,a.length-1);
+    for(let j=i+1;j<=end;j++){
+      let k=j;
+      while(k>i){
+        comps++;steps.push({arr:[...a],state:{[k]:'compare',[k-1]:'compare'},comps,swaps});
+        if(a[k]<a[k-1]){swaps++;[a[k],a[k-1]]=[a[k-1],a[k]];steps.push({arr:[...a],state:{[k]:'swap',[k-1]:'swap'},comps,swaps});k--;}
+        else break;
+      }
+    }
+  }
+  // merge passes
+  for(let size=RUN;size<a.length;size*=2){
+    for(let l=0;l<a.length;l+=2*size){
+      const m=Math.min(l+size-1,a.length-1);
+      const r=Math.min(l+2*size-1,a.length-1);
+      if(m>=r) continue;
+      // merge [l..m] and [m+1..r]
+      const L=a.slice(l,m+1),R=a.slice(m+1,r+1);
+      let i=0,j=0,k=l;
+      while(i<L.length&&j<R.length){
+        comps++;steps.push({arr:[...a],state:{[l+i]:'compare',[m+1+j]:'compare'},comps,swaps});
+        if(L[i]<=R[j])a[k++]=L[i++];else{a[k++]=R[j++];swaps++;steps.push({arr:[...a],state:{[k-1]:'swap'},comps,swaps});}
+      }
+      while(i<L.length)a[k++]=L[i++];while(j<R.length)a[k++]=R[j++];
+    }
+    steps.push({arr:[...a],state:{},comps,swaps});
+  }
+  steps.push({arr:[...a],state:Object.fromEntries(a.map((_,i)=>[i,'sorted'])),comps,swaps,done:true});
+  return steps;
+}
+
+/* init */
+document.getElementById('algoGrid').addEventListener('click',e=>{
+  const c=e.target.closest('.algo-card');if(c)c.classList.toggle('selected');
+});
 </script>
 </body>
 </html>

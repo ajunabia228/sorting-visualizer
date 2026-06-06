@@ -2,7 +2,15 @@
 
 An interactive, side-by-side sorting algorithm visualizer built with vanilla HTML, CSS, and JavaScript — no frameworks, no build step, one file.
 
-Live demo → **[ajunabia228.github.io/sorting-visualizer](https://ajunabia228.github.io/sorting-visualizer)**
+<p align="center">
+  <img src="screenshots/mainmenu.png" width="60%" alt="main menu screen" />
+</p>
+
+<p align="center">
+  <a href="https://ajunabia228.github.io/sorting-visualizer">
+    <img src="https://img.shields.io/badge/▶%20TEST%20IT%20LIVE-00ff88?style=for-the-badge&logoColor=black" alt="Test it live">
+  </a>
+</p>
 
 ---
 
@@ -21,6 +29,10 @@ Live demo → **[ajunabia228.github.io/sorting-visualizer](https://ajunabia228.g
 ---
 
 ## Algorithms
+
+<p align="center">
+  <img src="screenshots/sorting.png" width="60%" alt="sorting screen" />
+</p>
 
 | Algorithm      | Best case   | Average     | Worst case  | Space  |
 |----------------|-------------|-------------|-------------|--------|
